@@ -9,7 +9,10 @@ import (
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
+    // адрес со списком запрещенных ресурсов
 	url := "https://api.antizapret.info/all.php"
+
+
 
 	timeout := time.Duration(5) * time.Second
 	transport := &http.Transport{
@@ -28,13 +31,17 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	//copy the relevant headers. If you want to preserve the downloaded file name, extract it with go's url parser.
+	// здесь прописываем заголовки и имя скаченному файлу со списком
 	w.Header().Set("Content-Disposition", "attachment; filename=data.csv")
 	w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
 	w.Header().Set("Content-Length", r.Header.Get("Content-Length"))
 
 	//stream the body to the client without fully loading it into memory
 	io.Copy(w, resp.Body)
+
+
+
+
 }
 
 func main() {
