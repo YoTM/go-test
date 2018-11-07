@@ -5,19 +5,48 @@ import csv
 import re
 
 
+def check_url(url):
+    """
+        ф-я проверки валидности url-а
+    """
+
+    try:
+        return re.search(r"/^(https?:\/\/)?([\w\.]+)\.([a-z]{2,6}\.?)(\/[\w\.]*)*\/?$/", url)
+
+    except Exception as other:
+        print("Ошибка обработки url'а...", url)
+
+
 def check_value(rlist, value):
     """
         пр-ра проверки значений строки записи файла
         - проверка на перечисление url-ов
     """
-    # если в ячейке записи url-лы перечисляются, т.е. их несколько
-    if re.search(r"[\,]", value):
+    bad_value = []
+
+    if check_url(value):
+        rlist.append([value])
+    else:
         # делим их по запятой и записываем в список
         values = value.split(',')
         for v in values:
-            rlist.append([v])
-    else:
-        rlist.append([value])
+            if check_url(str(v)):
+                rlist.append([v])
+            else:
+                bad_value.append(v)
+
+    with open("bads.txt", "w") as file:
+        print(bad_value, file=file, sep='\n')
+
+
+    # если в ячейке записи url-лы перечисляются, т.е. их несколько
+    # if re.search(r"[\,]", value):
+    #     # делим их по запятой и записываем в список
+    #     values = value.split(',')
+    #     for v in values:
+    #         rlist.append([v])
+    # else:
+    #     rlist.append([value])
 
 
 def csv_parser(file_obj):
@@ -43,9 +72,14 @@ def csv_parser(file_obj):
             check_value(urls_list, item[1])
 
         elif item[2] != '':
-            urls_list.append([item[2]])
+            if check_url(item[2]):
+                urls_list.append([item[2]])
 
     print("Parsing complete...")
+
+
+
+    # print("Urls check complete...")
 
     with open("result.csv", "w") as file:
         writer = csv.writer(file, delimiter=';')
