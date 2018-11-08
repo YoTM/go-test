@@ -11,32 +11,40 @@ def check_url(url):
     """
 
     try:
-        return re.search(r"/^(https?:\/\/)?([\w\.]+)\.([a-z]{2,6}\.?)(\/[\w\.]*)*\/?$/", url)
+        return re.search(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", url)
 
     except Exception as other:
-        print("Ошибка обработки url'а...", url)
+        print("Ошибка обработки url'а...", url, other)
 
 
-def check_value(rlist, value):
+def check_value(rlist, value, bads):
     """
         пр-ра проверки значений строки записи файла
         - проверка на перечисление url-ов
     """
-    bad_value = []
+    # bad_value = []
 
     if check_url(value):
         rlist.append([value])
     else:
+        # print(value)
         # делим их по запятой и записываем в список
         values = value.split(',')
         for v in values:
+            # rlist.append([v])
+
             if check_url(str(v)):
                 rlist.append([v])
             else:
-                bad_value.append(v)
+                # print(v)
+                # bad_value.append(v)
+                bads.append(v)
 
-    with open("bads.txt", "w") as file:
-        print(bad_value, file=file, sep='\n')
+
+    # print(bad_value)
+    #
+    # with open("bads.txt", "a") as file:
+    #     print(bad_value, file=file, sep='\n')
 
 
     # если в ячейке записи url-лы перечисляются, т.е. их несколько
@@ -65,14 +73,16 @@ def csv_parser(file_obj):
     print('Start parsing...')
 
     urls_list = []
+    bad_value = []
 
     for item in data_list:
 
         if item[1] != '':
-            check_value(urls_list, item[1])
+            check_value(urls_list, item[1], bad_value)
 
         elif item[2] != '':
-            if check_url(item[2]):
+        # else:
+        #     if check_url(item[2]):
                 urls_list.append([item[2]])
 
     print("Parsing complete...")
@@ -86,7 +96,11 @@ def csv_parser(file_obj):
         for line in urls_list:
             writer.writerow(line)
 
+    with open("bads.txt", "w") as file:
+        print(*bad_value, file=file, sep="\n")
+
     print("file output.csv is ready...")
+    print(bad_value)
 
 
 if __name__ == "__main__":
