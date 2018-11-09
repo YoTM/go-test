@@ -11,7 +11,7 @@ def check_url(url):
     """
 
     try:
-        return re.search(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", url)
+        return re.search(r"http[s]?://(?:[a-zA-Z]|(?:[а-яА-Я])|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", url)
 
     except Exception as other:
         print("Ошибка обработки url'а...", url, other)
