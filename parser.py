@@ -79,7 +79,7 @@ def csv_parser(file_obj):
     # проверка на URI ^(([ ^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
     # проверка на IP    /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/
 
-    print('Парсинг данных начался...')
+    # print('Парсинг данных начался...')
 
     urls_list = []  # список проверенных url-ов
     bad_value = []  # список отработки/мусора
@@ -91,29 +91,32 @@ def csv_parser(file_obj):
             check_value(urls_list, item[1], bad_value)
         # если в первой ячейке нет валидных url-ов, то добавляем в список результата домен из ячейки 2
         else:
-            # если вместо домена не IP-ик
-            if not check_ip(item[2]):
+            # если вместо домена не IP-ик и ячейка не пустая
+            if not check_ip(item[2]) and item[2] != '':
                 urls_list.append([item[2]])
             else:
                 # если запись проверку не прошла, то добавляем строку в отработку
                 bad_value.append(item[2])
 
-    print("Парсинг данных завершён...")
+    # print("Парсинг данных завершён...")
+    # Вывод результата в консоль
+    for line in urls_list:
+        print('\n'.join(line))
 
-    with open("result.csv", "w") as file:
-        writer = csv.writer(file, delimiter=';')
-        for line in urls_list:
-            writer.writerow(line)
+    # with open("result.csv", "w") as file:
+    #     writer = csv.writer(file, delimiter=';')
+    #     for line in urls_list:
+    #         writer.writerow(line)
 
     with open("bads.txt", "w") as file:
         print(*bad_value, file=file, sep="\n")
 
-    print("Результаты записаны...")
+    # print("Результаты записаны...")
 
 
 if __name__ == "__main__":
 
-    csv_path = "data.csv"     #sys.stdin.read()
+    csv_path = sys.stdin.read()    # "data.csv"     # sys.stdin.read()
 
     with open(csv_path, "r") as f_obj:
         csv_parser(f_obj)

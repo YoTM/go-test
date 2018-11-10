@@ -6,9 +6,16 @@ import (
     "net/http"
     "os"
     "os/exec"
+    //"path/filepath"
+    //"io/ioutil"
+    //"encoding/csv"
+    //"bufio"
 )
 
+
 func Index(w http.ResponseWriter, r *http.Request) {
+
+    fmt.Fprintf(w, "Content filtr is running!") // отправляем данные на клиентскую сторону
 
 	// блок манипуляций с файлом
 
@@ -19,9 +26,9 @@ func Index(w http.ResponseWriter, r *http.Request) {
         panic(err)
     }
 
-    // попытка достучаться до питона
+    // Запускаем парсер на питоне
     data_file := []byte("data.csv")
-    cmd := exec.Command("python3", "get_urls.py")
+    cmd := exec.Command("python3", "parser.py")
 
     stdin, err := cmd.StdinPipe()
     if err != nil {
@@ -35,7 +42,39 @@ func Index(w http.ResponseWriter, r *http.Request) {
         }
     }()
 
-    fmt.Println("Exec status: ", cmd.Run())
+    // сохраняем ответ парсера в файл out.csv
+    outfile, err := os.Create("./out.csv")
+    if err != nil {
+        panic(err)
+    }
+    defer outfile.Close()
+    cmd.Stdout = outfile
+
+    err = cmd.Start(); if err != nil {
+        panic(err)
+    }
+    cmd.Wait()
+
+   // fmt.Println("Exec status: ", cmd.Run())
+
+    // здесь прописываем заголовки и имя скаченному файлу со списком
+	w.Header().Set("Content-Disposition", "attachment; filename=response.csv")
+	w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
+	w.Header().Set("Content-Length", r.Header.Get("Content-Length"))
+
+	//
+	io.Copy(w, outfile)
+
+   // отдаём файл результата клиенту
+    //fmt.Println("Read request: " + "out.csv")
+   // file, err := ioutil.ReadAll(outfile)     //ReadFile("./out.csv")
+ //   if err != nil {
+  //    fmt.Println("Cann't open file: " + "out.csv")
+ //   } else {
+  //    w.Write(file)
+   // }
+
+
 
 }
 
@@ -71,8 +110,8 @@ func DownloadFile(filepath string, url string) error {
 }
 
 func main() {
-	http.HandleFunc("/", Index)
-	err := http.ListenAndServe(":8000", nil)
+	http.HandleFunc("/getAllUrls", Index)
+	err := http.ListenAndServe(":8080", nil)
 
 	if err != nil {
 		fmt.Println(err)
